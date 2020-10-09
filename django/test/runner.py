@@ -392,6 +392,7 @@ class ParallelTestSuite(unittest.TestSuite):
                     continue
                 test = tests[event[1]]
                 args = event[2:]
+                print("HANDLING", test, " ARGS: ", args)
                 handler(test, *args)
 
         pool.join()
