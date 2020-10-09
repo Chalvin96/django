@@ -308,6 +308,33 @@ def _run_subsuite(args):
     return subsuite_index, result.events
 
 
+def next(self, timeout=None):
+    with self._cond:
+        try:
+            item = self._items.popleft()
+        except IndexError:
+            if self._index == self._length:
+                raise StopIteration
+            self._cond.wait(timeout)
+            try:
+                item = self._items.popleft()
+            except IndexError:
+                if self._index == self._length:
+                    raise StopIteration
+                raise TimeoutError
+        except Exception as e:
+            print("NEXT ERROR: ", str(e))
+            import traceback
+            traceback.print_exc()
+            print("TEIM: ", item)
+            print("self._items", self._items[0])
+
+    success, value = item
+    print("success, value", success, value)
+    if success:
+        return value
+    raise value
+
 class ParallelTestSuite(unittest.TestSuite):
     """
     Run a series of tests in parallel in several processes.
@@ -360,16 +387,14 @@ class ParallelTestSuite(unittest.TestSuite):
             for index, subsuite in enumerate(self.subsuites)
         ]
         test_results = pool.imap_unordered(self.run_subsuite.__func__, args)
-        subsuite_index = None
-        events = []
-        tests = []
+
         while True:
             if result.shouldStop:
                 pool.terminate()
                 break
 
             try:
-                subsuite_index, events = test_results.next(timeout=0.1)
+                subsuite_index, events = next(test_results, timeout=0.1)
             except multiprocessing.TimeoutError:
                 continue
             except StopIteration:
@@ -377,11 +402,6 @@ class ParallelTestSuite(unittest.TestSuite):
                 break
             except Exception as e:
                 print("RUNNER ERROR", str(e))
-                print("test_results", str(test_results))
-                print("prev", subsuite_index, '---', events)
-                print("tests", tests)
-                import traceback
-                traceback.print_exc()
                 raise
 
             tests = list(self.subsuites[subsuite_index])
