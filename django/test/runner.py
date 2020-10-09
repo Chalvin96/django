@@ -360,7 +360,9 @@ class ParallelTestSuite(unittest.TestSuite):
             for index, subsuite in enumerate(self.subsuites)
         ]
         test_results = pool.imap_unordered(self.run_subsuite.__func__, args)
-
+        subsuite_index = None
+        events = []
+        tests = []
         while True:
             if result.shouldStop:
                 pool.terminate()
@@ -373,6 +375,14 @@ class ParallelTestSuite(unittest.TestSuite):
             except StopIteration:
                 pool.close()
                 break
+            except Exception as e:
+                print("RUNNER ERROR", str(e))
+                print("test_results", str(test_results))
+                print("prev", subsuite_index, '---', events)
+                print("tests", tests)
+                import traceback
+                traceback.print_exc()
+                raise
 
             tests = list(self.subsuites[subsuite_index])
             for event in events:
