@@ -369,6 +369,7 @@ class ParallelTestSuite(unittest.TestSuite):
                 break
 
             try:
+                print("NEXT")
                 subsuite_index, events = test_results.next(timeout=0.1)
             except multiprocessing.TimeoutError:
                 continue
@@ -382,7 +383,6 @@ class ParallelTestSuite(unittest.TestSuite):
                 print("tests", tests)
                 import traceback
                 traceback.print_exc()
-                raise
 
             tests = list(self.subsuites[subsuite_index])
             for event in events:
