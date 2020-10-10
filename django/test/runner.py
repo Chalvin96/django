@@ -307,18 +307,20 @@ def _run_subsuite(args):
     result = runner.run(subsuite)
     return subsuite_index, result.events
 
-
+from multiprocessing import TimeoutError
 def next(self, timeout=None):
     with self._cond:
         try:
             item = self._items.popleft()
-        except IndexError:
+        except IndexError as e:
+            print("INDEX ERROR 1: ", str(e))
             if self._index == self._length:
                 raise StopIteration
             self._cond.wait(timeout)
             try:
                 item = self._items.popleft()
             except IndexError:
+                print("INDEX ERROR 2: ", str(e))
                 if self._index == self._length:
                     raise StopIteration
                 raise TimeoutError
