@@ -307,7 +307,7 @@ def _run_subsuite(args):
     result = runner.run(subsuite)
     return subsuite_index, result.events
 
-from multiprocessing import TimeoutError
+
 def next(self, timeout=None):
     with self._cond:
         try:
@@ -323,7 +323,7 @@ def next(self, timeout=None):
                 print("INDEX ERROR 2: ", str(e))
                 if self._index == self._length:
                     raise StopIteration
-                raise TimeoutError
+                raise multiprocessing.TimeoutError
         except Exception as e:
             print("NEXT ERROR: ", str(e))
             import traceback
